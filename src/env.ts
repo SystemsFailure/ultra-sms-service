@@ -34,6 +34,7 @@ const EnvSchema = z.object({
   REDIS_PASSWORD: z.string().optional(),
   REDIS_DB: z.coerce.number().optional(),
   REDIS_KEY_PREFIX: z.string().default('billing:'),
+  PHONE_CODE_EXPIRE: z.number().default(3600)
 })
 
 export type env = z.infer<typeof EnvSchema>
