@@ -1,0 +1,30 @@
+Центральный контроллер для отправки SMS/сообщений через разные провайдеры (GreenSMS, Twilio, SmsAero, Telegram).
+
+Его задача — абстрагировать разные сервисы отправки смс и выбирать лучший, делать fallback, проверять валидность номеров, кешировать/отслеживать состояние через Redis, логировать, и т.п.
+
+
+Основные части и что делают
+SmsServicesNameEnum — enum с ключами провайдеров (aero, green, twilio)
+
+SmsServiceController — главный класс, через который работают с сервисами
+
+В конструкторе
+Внедряются сервисы отправки (greenSms, twilio, smsAero, telegram)
+
+Создается словарь smsServicesAsList для быстрого доступа к сервисам по ключу
+
+Внедряется хранилище (Redis) и Telegram-сервис
+
+Методы
+healthCheck() — проверяет доступность всех сервисов
+isValidRuPhone(phone) — валидирует номер РФ (libphonenumber-js)
+throwErrorIfPhoneNotValidate(phone) — кидает ошибку, если номер вообще невалидный
+sendSms(phone, text, providerName) — отправляет через дефолтный сервис (green), fallback через aero/twilio
+sendTelegramAuthCode(phone, body) — отправляет код через телеграм, с кешем requestId в Redis
+sendSmsServiceSlug(phone, body, serviceSlug) — отправка через конкретный сервис по ключу
+sendInvite(phone, lang, serviceSlug) — отправляет приглашение
+generateCode(), isDevPhone(), getCodeByPhone() — генерация и проверка dev номеров
+getSmsText(type, lang) — получает текст из локализации
+sendAuthCode(...) — главный метод отправки авторизационного кода, поддерживает две версии (v1 и v2)
+interpolateSmsText(text, variables) — заменяет плейсхолдеры в шаблоне
+checkAuthCode(phone, code) — проверка правильности кода из хранилища

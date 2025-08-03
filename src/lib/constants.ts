@@ -26,3 +26,15 @@ export const notFoundSchema = createMessageObjectSchema(HttpStatusPhrases.NOT_FO
 export const SKIP_MIDDLEWARE_PATH = [
   'auth'
 ]
+
+// Энам и тип для списка доступных продуктов
+export const ProvidersNames = {
+  crm: 'Crm',
+  planner: 'Planner',
+  sender: 'Sender',
+  sendbot: 'Sendbot', // alias для sender
+  widget: 'Widget',
+  logic: 'Logic',
+} as const
+
+export type ProviderName = typeof ProvidersNames[keyof typeof ProvidersNames]
