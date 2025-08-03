@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.2-alpine
+    container_name: sms-redis
+    restart: always
+    ports:
+      - "63790:6379"
+    command: redis-server --requirepass your_redis_password
