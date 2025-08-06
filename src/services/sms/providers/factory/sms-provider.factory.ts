@@ -1,26 +1,52 @@
+// sms/factory/SmsProviderFactory.ts
+import { HttpService } from 'services/http/http.service';
 import { SmsProvider } from 'services/sms/@types';
 import { GreenSmsProvider } from '../green-sms.provider';
-// import { TwilioSmsProvider } from './providers/TwilioSmsProvider';
-// import { SmsAeroProvider } from './providers/SmsAeroProvider';
-// import { TelegramProvider } from './providers/TelegramProvider';
+import { TwilioProvider } from '../twilio-sms.provider';
+import { SmsAeroProvider } from '../sms-aero.provider';
+
+interface SmsProviderFactoryDeps {
+  httpService: HttpService;
+  config: Record<string, any>;
+}
 
 export class SmsProviderFactory {
-  private static providersMap: Record<string, () => SmsProvider> = {
-    green: () => new GreenSmsProvider(),
-    // twilio: () => new TwilioSmsProvider(),
-    // aero: () => new SmsAeroProvider(),
-    // telegram: () => new TelegramProvider(),
+  constructor(private readonly deps: SmsProviderFactoryDeps) {}
+
+  private readonly providersMap: Record<string, () => SmsProvider> = {
+    green: () =>
+      new GreenSmsProvider(this.deps.httpService, {
+        login: this.deps.config.green.login,
+        password: this.deps.config.green.password,
+        from: this.deps.config.green.from,
+      }),
+
+    aero: () =>
+      new SmsAeroProvider({
+        email: this.deps.config.aero.email,
+        apiKey: this.deps.config.aero.apiKey,
+        sign: this.deps.config.aero.sign,
+      }),
+
+    twilio: () =>
+      new TwilioProvider({
+        accountId: this.deps.config.twilio.accountId,
+        authToken: this.deps.config.twilio.authToken,
+        from: this.deps.config.twilio.from,
+      }),
+
+    // telegram: () => new TelegramProvider(...),
   };
 
-  static createProvider(name: string): SmsProvider {
-    const providerCreator = this.providersMap[name];
-    if (!providerCreator) {
-      throw new Error(`Provider ${name} not found in factory`);
+  createProvider(name: string): SmsProvider {
+    const creator = this.providersMap[name];
+    if (!creator) {
+      throw new Error(`❌ SMS Provider "${name}" is not registered.`);
     }
-    return providerCreator();
+    return creator();
   }
 
-  static listAvailableProviders(): string[] {
+  listAvailableProviders(): string[] {
     return Object.keys(this.providersMap);
   }
 }

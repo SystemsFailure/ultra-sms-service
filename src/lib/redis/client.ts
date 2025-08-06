@@ -7,7 +7,7 @@ export const redisClient = createClient({
     port: env.REDIS_PORT,
   },
   password: env.REDIS_PASSWORD,
-  // database: env.REDIS_DB ?? 0,
+  // database: env.REDIS_DB ?? 0, // <- TODO проставить
   // prefix: env.REDIS_KEY_PREFIX ?? '',
 })
 

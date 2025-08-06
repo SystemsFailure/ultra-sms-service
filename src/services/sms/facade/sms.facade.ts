@@ -10,11 +10,17 @@ export class SmsFacade {
   private logger: PinoLogger;
   private strategy: ProviderSelectionStrategy;
 
-  constructor(storage: PhoneCodeRedisStorage, logger: PinoLogger, strategy: ProviderSelectionStrategy, providerNames: string[]) {
+  constructor(
+    storage: PhoneCodeRedisStorage,
+    logger: PinoLogger,
+    strategy: ProviderSelectionStrategy,
+    factory: SmsProviderFactory,
+    providerNames: string[]
+  ) {
     this.storage = storage;
     this.logger = logger;
     this.strategy = strategy;
-    this.providers = providerNames.map(name => SmsProviderFactory.createProvider(name));
+    this.providers = providerNames.map(name => factory.createProvider(name));
   }
 
   async healthCheck() {
@@ -47,12 +53,33 @@ export class SmsFacade {
   import { RegionBasedStrategy } from './ProviderSelectionStrategy';
   import { RedisStorage } from '../storage/RedisStorage';
   import { Logger } from '../utils/Logger';
+  import { SmsProviderFactory } from './providers/factory/sms-provider.factory';
+  import { HttpService } from 'services/http/http.service';
 
   const redisStorage = new RedisStorage();
   const logger = new Logger();
   const strategy = new RegionBasedStrategy();
 
-  const smsFacade = new SmsFacade(redisStorage, logger, strategy, ['green', 'twilio', 'aero', 'telegram']);
+  const httpService = new HttpService();
+  const config = {
+    green: {
+      login: 'login',
+      password: 'password',
+      from: 'sender-name',
+    },
+    // другие провайдеры
+  };
+
+  const factory = new SmsProviderFactory({ httpService, config });
+
+  const smsFacade = new SmsFacade(
+    redisStorage,
+    logger,
+    strategy,
+    factory,
+    ['green'] // список провайдеров
+  );
 
   export default smsFacade;
+
 */
